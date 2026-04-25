@@ -110,12 +110,40 @@ def _public_task_snapshot(request: Request, task: dict) -> dict:
     def file_to_uri(file: str) -> str:
         if not file or not isinstance(file, str):
             return file
-        if file.startswith("http://") or file.startswith("https://"):
+        s = file.strip()
+        if not s:
             return file
-        if file.startswith(endpoint):
-            return file
-        _uri_path = file.replace(task_dir, "tasks").replace("\\", "/")
-        return f"{endpoint}/{_uri_path}"
+        if s.startswith("http://") or s.startswith("https://"):
+            return s
+        if s.startswith(endpoint):
+            return s
+        # 静态挂载：/tasks -> storage/tasks；相对 URL 为 /tasks/<task_id>/...
+        # 历史数据可能来自其它目录（如旧仓库 MoneyPrinterTurbo），简单 replace(task_dir, "tasks")
+        # 会失败，进而拼出 http://host//Users/... 这类无效地址。
+        try:
+            abs_file = os.path.realpath(s)
+            abs_root = os.path.realpath(task_dir)
+            if abs_file.startswith(abs_root + os.sep):
+                rel = os.path.relpath(abs_file, abs_root).replace("\\", "/")
+                if ".." not in rel.split("/"):
+                    return f"{endpoint}/tasks/{rel}"
+        except (OSError, ValueError):
+            pass
+
+        norm = os.path.normpath(s).replace("\\", "/")
+        marker = "/tasks/"
+        pos = norm.find(marker)
+        if pos != -1:
+            rel_url = norm[pos + len(marker) :]
+            if rel_url and ".." not in rel_url.split("/"):
+                return f"{endpoint}/tasks/{rel_url}"
+
+        logger.info(
+            "file_to_uri: could not map local path to /tasks URL path={} task_dir={}",
+            s,
+            task_dir,
+        )
+        return s
 
     snap = dict(task)
     for key in ("videos", "combined_videos"):
