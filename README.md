@@ -8,6 +8,28 @@
 - **Web 管理端**：Jinja2 模板 + 静态资源，与 API 协同使用。
 - **可配置提供商**：在 `config.toml` 中切换 Pexels / Pixabay、DeepSeek、OpenAI、Gemini、通义千问、Azure 等多种 LLM 与字幕方案（Edge / Whisper 等）。
 
+## Web 界面展示
+
+启动服务后，在浏览器访问 **`http://<listen_host>:<listen_port>/admin`** 进入管理后台（侧边栏：工作台、视频生成、任务列表、视频列表）。
+
+### 工作台
+
+入口总览：视频生成、任务列表、视频列表的快速说明与进入按钮。
+
+![工作台](./docs/web-workbench.png)
+
+### 任务列表
+
+分页查看任务状态、进度、成片链接与生成日志；支持筛选、刷新、重试与删除。
+
+![任务列表](./docs/web-tasks.png)
+
+### 视频列表
+
+查看已持久化的成片卡片：支持内嵌预览、打开成片链接，并可按主题、状态与时间筛选。
+
+![视频列表](./docs/web-videos.png)
+
 ## 环境要求
 
 | 项 | 说明 |
@@ -61,6 +83,7 @@ app/                    # FastAPI 应用：路由、控制器、服务、模型
 resource/               # 模板、静态页、字体、示例 BGM 等
 scripts/                # start / stop / restart
 example.toml            # 配置模板
+docs/                   # 文档与界面截图等
 test/                   # unittest 与测试资源
 AGENTS.md               # 面向协作者与自动化代理的约定与说明
 ```
