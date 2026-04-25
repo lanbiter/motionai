@@ -12,6 +12,12 @@
 
 启动服务后，在浏览器访问 **`http://<listen_host>:<listen_port>/admin`** 进入管理后台（侧边栏：工作台、视频生成、任务列表、视频列表）。
 
+**截图文件引用：**
+
+- 工作台：[docs/web-workbench.png](./docs/web-workbench.png)
+- 任务列表：[docs/web-tasks.png](./docs/web-tasks.png)
+- 视频列表：[docs/web-videos.png](./docs/web-videos.png)
+
 ### 工作台
 
 入口总览：视频生成、任务列表、视频列表的快速说明与进入按钮。
