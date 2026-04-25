@@ -168,9 +168,10 @@ def _public_task_snapshot(request: Request, task: dict) -> dict:
         )
         return s
 
-    def path_list_to_api_urls(field_key: str, val: object) -> object:
+    def path_list_to_browser_urls(field_key: str, val: object) -> object:
         if not isinstance(val, list):
             return val
+        tasks_prefix = f"{endpoint}/tasks/"
         out: list[str | object] = []
         for i, p in enumerate(val):
             if not isinstance(p, str):
@@ -186,17 +187,26 @@ def _public_task_snapshot(request: Request, task: dict) -> dict:
             if s.startswith(endpoint):
                 out.append(s)
                 continue
+            mapped = file_to_uri(s)
+            if isinstance(mapped, str) and mapped.startswith(tasks_prefix):
+                out.append(mapped)
+                continue
+            if isinstance(mapped, str) and (
+                mapped.startswith("http://") or mapped.startswith("https://")
+            ):
+                out.append(mapped)
+                continue
             if tid:
                 out.append(
                     f"{endpoint}/api/v1/tasks/{tid}/file?field={field_key}&index={i}"
                 )
             else:
-                out.append(file_to_uri(s))
+                out.append(mapped)
         return out
 
     snap = dict(task)
-    snap["videos"] = path_list_to_api_urls("videos", snap.get("videos"))
-    snap["combined_videos"] = path_list_to_api_urls(
+    snap["videos"] = path_list_to_browser_urls("videos", snap.get("videos"))
+    snap["combined_videos"] = path_list_to_browser_urls(
         "combined_videos", snap.get("combined_videos")
     )
     return snap
