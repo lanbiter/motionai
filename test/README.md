@@ -1,6 +1,6 @@
-# MoneyPrinterTurbo Test Directory
+# motionai Test Directory
 
-This directory contains unit tests for the **MoneyPrinterTurbo** project.
+This directory contains unit tests for the **motionai** project.
 
 ## Directory Structure
 

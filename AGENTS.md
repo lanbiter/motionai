@@ -4,7 +4,7 @@
 
 ## 项目是什么
 
-基于 **FastAPI** 的应用：视频素材、文案/LLM、语音与任务流水线（延续 MoneyPrinterTurbo 类能力），带 **Jinja2** 管理端页面与 **OpenAPI** 接口。
+基于 **FastAPI** 的应用：视频素材、文案/LLM、语音与任务流水线，带 **Jinja2** 管理端页面与 **OpenAPI** 接口。
 
 ## 运行时与依赖
 
