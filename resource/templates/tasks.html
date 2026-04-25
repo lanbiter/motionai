@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block title %}任务列表{% endblock %}
+{% block breadcrumb %}
+{% endblock %}
+{% block content %}
+<div class="ant-card ant-card-bordered" style="margin-bottom:12px;">
+  <div class="ant-card-body">
+    <div class="mpt-filter-row">
+      <input id="mpt-tasks-filter-subject" class="ant-input" type="text" placeholder="主题" />
+      <select id="mpt-tasks-filter-state" class="ant-input">
+        <option value="">全部状态</option>
+        <option value="4">进行中</option>
+        <option value="1">已完成</option>
+        <option value="-1">失败</option>
+      </select>
+      <input id="mpt-tasks-filter-created-from" class="ant-input" type="datetime-local" />
+      <input id="mpt-tasks-filter-created-to" class="ant-input" type="datetime-local" />
+      <button type="button" id="mpt-tasks-filter-apply" class="ant-btn ant-btn-primary">查询</button>
+      <button type="button" id="mpt-tasks-filter-reset" class="ant-btn">重置</button>
+    </div>
+  </div>
+</div>
+
+<div class="ant-table-wrapper mpt-table-wrap">
+  <table class="ant-table ant-table-bordered" style="width:100%;table-layout:fixed;">
+    <colgroup>
+      <col style="width:120px;" />
+      <col style="width:180px;" />
+      <col style="width:80px;" />
+      <col style="width:70px;" />
+      <col style="width:160px;" />
+      <col style="width:110px;" />
+      <col style="width:110px;" />
+      <col style="width:130px;" />
+    </colgroup>
+    <thead class="ant-table-thead">
+      <tr>
+        <th>任务 ID</th>
+        <th>视频主题</th>
+        <th>状态</th>
+        <th>进度</th>
+        <th>视频</th>
+        <th>生成日志</th>
+        <th>创建时间</th>
+        <th>操作</th>
+      </tr>
+    </thead>
+    <tbody id="mpt-task-rows" class="ant-table-tbody"></tbody>
+  </table>
+</div>
+
+<div class="mpt-btn-row mpt-toolbar-row">
+  <button type="button" id="mpt-tasks-refresh" class="ant-btn ant-btn-primary">刷新</button>
+  <span class="mpt-muted mpt-toolbar-text" id="mpt-tasks-meta"></span>
+  <button type="button" class="ant-btn" id="mpt-tasks-prev">上一页</button>
+  <span id="mpt-tasks-page" class="mpt-muted mpt-toolbar-text"></span>
+  <button type="button" class="ant-btn" id="mpt-tasks-next">下一页</button>
+</div>
+
+<div id="mpt-task-log-modal" class="mpt-task-log-modal" style="display:none;">
+  <div class="mpt-task-log-modal-mask"></div>
+  <div class="mpt-task-log-modal-panel">
+    <div class="mpt-task-log-modal-head">
+      <div class="mpt-task-log-modal-title" id="mpt-task-log-title">任务日志</div>
+      <button type="button" class="ant-btn" id="mpt-task-log-close">关闭</button>
+    </div>
+    <pre id="mpt-task-log-content" class="mpt-task-log-content"></pre>
+  </div>
+</div>
+{% endblock %}

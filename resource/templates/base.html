@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>{% block title %}{{ project_name }}{% endblock %} · 管理后台</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/antd@4.24.16/dist/antd.min.css" crossorigin="anonymous"/>
+  <link rel="stylesheet" href="/admin/admin.css?v=20260426f"/>
+  {% block head_extra %}{% endblock %}
+</head>
+<body>
+{% set path = request.url.path %}
+<div class="mpt-layout">
+  <aside class="mpt-sider">
+    <div class="mpt-logo">
+      <span class="mpt-logo-image-wrap">
+        <img class="mpt-logo-image" src="/admin/logo-motionai.png?v=20260425b" alt="{{ project_name }} logo"/>
+      </span>
+      <span class="mpt-logo-text">{{ project_name }}</span>
+    </div>
+    <nav class="mpt-sider-nav">
+      <a class="mpt-nav-item{% if path == '/admin' or path == '/admin/' %} mpt-nav-item-active{% endif %}" href="/admin">工作台</a>
+      <a class="mpt-nav-item{% if path == '/admin/video' or path == '/admin/video/' %} mpt-nav-item-active{% endif %}" href="/admin/video">视频生成</a>
+      <a class="mpt-nav-item{% if path.startswith('/admin/tasks') %} mpt-nav-item-active{% endif %}" href="/admin/tasks">任务列表</a>
+      <a class="mpt-nav-item{% if path.startswith('/admin/videos') %} mpt-nav-item-active{% endif %}" href="/admin/videos">视频列表</a>
+    </nav>
+    <div class="mpt-sider-footer">v{{ project_version }}</div>
+  </aside>
+  <div class="mpt-main">
+    <header class="mpt-header">
+      <div class="mpt-breadcrumb">
+        {% block breadcrumb %}<span>首页</span>{% endblock %}
+      </div>
+    </header>
+    <main class="mpt-content">
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+</div>
+<script>
+  window.MPT_API_PREFIX = "{{ request.base_url }}".replace(/\/+$/, "") + "/api/v1";
+</script>
+<script src="/admin/admin.js?v=20260426i"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

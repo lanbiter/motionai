@@ -1,0 +1,268 @@
+{% extends "base.html" %}
+{% block title %}视频生成{% endblock %}
+{% block breadcrumb %}
+{% endblock %}
+{% block content %}
+
+<div id="mpt-video-alerts"></div>
+
+<div class="ant-card ant-card-bordered" style="margin-bottom: 16px;">
+  <div class="ant-card-head"><div class="ant-card-head-title">文案与关键词</div></div>
+  <div class="ant-card-body">
+    <div class="ant-row ant-form-item">
+      <div class="ant-col ant-col-24 ant-col-md-12" style="padding-right:12px;">
+        <label class="mpt-label">视频主题</label>
+        <input id="mpt-video-subject" class="ant-input" type="text" placeholder="主题或关键词"/>
+      </div>
+      <div class="ant-col ant-col-24 ant-col-md-6" style="padding-right:12px;">
+        <label class="mpt-label">文案语言</label>
+        <select id="mpt-video-language" class="ant-input">
+          <option value="">自动检测</option>
+          <option value="zh-CN">zh-CN</option>
+          <option value="zh-HK">zh-HK</option>
+          <option value="zh-TW">zh-TW</option>
+          <option value="en-US">en-US</option>
+          <option value="de-DE">de-DE</option>
+          <option value="fr-FR">fr-FR</option>
+          <option value="vi-VN">vi-VN</option>
+          <option value="th-TH">th-TH</option>
+          <option value="tr-TR">tr-TR</option>
+        </select>
+      </div>
+      <div class="ant-col ant-col-24 ant-col-md-6">
+        <label class="mpt-label">脚本段落数（LLM）</label>
+        <input id="mpt-paragraph-number" class="ant-input" type="number" min="1" max="10" value="1"/>
+      </div>
+    </div>
+    <div class="ant-row" style="margin-top:8px;">
+      <div class="ant-col ant-col-24">
+        <label class="mpt-label">视频文案</label>
+        <textarea id="mpt-video-script" class="ant-input" rows="8" placeholder="可点击生成或自行粘贴"></textarea>
+      </div>
+    </div>
+    <div class="mpt-btn-row" style="margin-top:8px;">
+      <button type="button" id="mpt-btn-script" class="ant-btn ant-btn-default">生成文案与关键词</button>
+      <button type="button" id="mpt-btn-terms" class="ant-btn ant-btn-default">仅生成关键词</button>
+    </div>
+    <div class="ant-row" style="margin-top:12px;">
+      <div class="ant-col ant-col-24">
+        <label class="mpt-label">视频关键词（英文检索词，逗号分隔）</label>
+        <textarea id="mpt-video-terms" class="ant-input" rows="3" placeholder="sky, forest, ..."></textarea>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="ant-card ant-card-bordered" style="margin-bottom: 16px;">
+  <div class="ant-card-head"><div class="ant-card-head-title">画面与素材</div></div>
+  <div class="ant-card-body">
+    <div class="ant-row ant-form-item">
+      <div class="ant-col ant-col-24 ant-col-md-8" style="padding-right:12px;">
+        <label class="mpt-label">素材来源</label>
+        <select id="mpt-video-source" class="ant-input">
+          <option value="pexels" {% if cfg_app.get('video_source','pexels')=='pexels' %}selected{% endif %}>Pexels</option>
+          <option value="pixabay" {% if cfg_app.get('video_source')=='pixabay' %}selected{% endif %}>Pixabay</option>
+          <option value="local" {% if cfg_app.get('video_source')=='local' %}selected{% endif %}>本地文件</option>
+        </select>
+      </div>
+      <div class="ant-col ant-col-24 ant-col-md-8" style="padding-right:12px;">
+        <label class="mpt-label">拼接模式</label>
+        <select id="mpt-video-concat" class="ant-input">
+          <option value="sequential">顺序</option>
+          <option value="random" selected>随机</option>
+        </select>
+      </div>
+      <div class="ant-col ant-col-24 ant-col-md-8">
+        <label class="mpt-label">转场</label>
+        <select id="mpt-video-transition" class="ant-input">
+          <option value="">无</option>
+          <option value="Shuffle">Shuffle</option>
+          <option value="FadeIn">FadeIn</option>
+          <option value="FadeOut">FadeOut</option>
+          <option value="SlideIn">SlideIn</option>
+          <option value="SlideOut">SlideOut</option>
+        </select>
+      </div>
+    </div>
+    <div class="ant-row ant-form-item">
+      <div class="ant-col ant-col-24 ant-col-md-8" style="padding-right:12px;">
+        <label class="mpt-label">画幅</label>
+        <select id="mpt-video-aspect" class="ant-input">
+          <option value="9:16" selected>竖屏 9:16</option>
+          <option value="16:9">横屏 16:9</option>
+        </select>
+      </div>
+      <div class="ant-col ant-col-24 ant-col-md-8" style="padding-right:12px;">
+        <label class="mpt-label">单片段时长（秒）</label>
+        <select id="mpt-clip-duration" class="ant-input">
+          {% for n in [2,3,4,5,6,7,8,9,10] %}
+          <option value="{{ n }}" {% if n==5 %}selected{% endif %}>{{ n }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="ant-col ant-col-24 ant-col-md-8">
+        <label class="mpt-label">同时生成条数</label>
+        <select id="mpt-video-count" class="ant-input">
+          {% for n in range(1,6) %}
+          <option value="{{ n }}" {% if n==1 %}selected{% endif %}>{{ n }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+    <div id="mpt-local-wrap" class="ant-row" style="margin-top:8px;display:none;">
+      <div class="ant-col ant-col-24">
+        <label class="mpt-label">本地上传（可多选）</label>
+        <input id="mpt-local-files" class="ant-input" type="file" multiple accept=".mp4,.mov,.avi,.flv,.mkv,.jpg,.jpeg,.png"/>
+        <p class="mpt-muted" style="margin-top:4px;">选择「本地文件」时生效；将先上传到服务器再参与合成。</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="ant-card ant-card-bordered" style="margin-bottom: 16px;">
+  <div class="ant-card-head"><div class="ant-card-head-title">配音与配乐</div></div>
+  <div class="ant-card-body">
+    <div class="ant-row ant-form-item">
+      <div class="ant-col ant-col-24" style="margin-bottom:8px;">
+        <label class="mpt-label">语音（当前 TTS：{{ tts_server }}）</label>
+        <select id="mpt-voice-name" class="ant-input">
+          {% for v in voices %}
+          <option value="{{ v | e }}" {% if v == cfg_ui.get('voice_name', '') %}selected{% endif %}>{{ v | e }}</option>
+          {% endfor %}
+        </select>
+        {% if not voices %}
+        <p class="mpt-muted">未加载到语音列表，请检查 Azure / SiliconFlow 等配置。</p>
+        {% endif %}
+      </div>
+    </div>
+    <div class="ant-row ant-form-item">
+      <div class="ant-col ant-col-24 ant-col-md-8" style="padding-right:12px;">
+        <label class="mpt-label">语速</label>
+        <select id="mpt-voice-rate" class="ant-input">
+          {% for x in [0.8,0.9,1.0,1.1,1.2,1.3,1.5,1.8,2.0] %}
+          <option value="{{ x }}" {% if x == 1.0 %}selected{% endif %}>{{ x }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="ant-col ant-col-24 ant-col-md-8" style="padding-right:12px;">
+        <label class="mpt-label">音量</label>
+        <select id="mpt-voice-volume" class="ant-input">
+          {% for x in [0.6,0.8,1.0,1.2,1.5,2.0,3.0,4.0,5.0] %}
+          <option value="{{ x }}" {% if x == 1.0 %}selected{% endif %}>{{ x }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="ant-col ant-col-24 ant-col-md-8">
+        <label class="mpt-label">背景音乐</label>
+        <select id="mpt-bgm-type" class="ant-input">
+          <option value="">无</option>
+          <option value="random" selected>随机</option>
+          <option value="custom">指定文件</option>
+        </select>
+      </div>
+    </div>
+    <div class="ant-row ant-form-item">
+      <div class="ant-col ant-col-24 ant-col-md-12" style="padding-right:12px;">
+        <label class="mpt-label">自定义 BGM 路径（可选）</label>
+        <input id="mpt-bgm-file" class="ant-input" type="text" placeholder="绝对路径或已上传文件名"/>
+      </div>
+      <div class="ant-col ant-col-24 ant-col-md-12">
+        <label class="mpt-label">BGM 音量</label>
+        <select id="mpt-bgm-volume" class="ant-input">
+          {% for x in [0.0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0] %}
+          <option value="{{ x }}" {% if x == 0.2 %}selected{% endif %}>{{ x }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="ant-card ant-card-bordered" style="margin-bottom: 16px;">
+  <div class="ant-card-head"><div class="ant-card-head-title">字幕</div></div>
+  <div class="ant-card-body">
+    <div class="ant-row ant-form-item">
+      <div class="ant-col ant-col-24 ant-col-md-8" style="padding-right:12px;">
+        <label class="mpt-label"><input id="mpt-subtitle-enabled" type="checkbox" checked/> 启用字幕</label>
+      </div>
+      <div class="ant-col ant-col-24 ant-col-md-8" style="padding-right:12px;">
+        <label class="mpt-label">字体</label>
+        <select id="mpt-font-name" class="ant-input">
+          {% for f in fonts %}
+          <option value="{{ f | e }}" {% if f == cfg_ui.get('font_name', 'MicrosoftYaHeiBold.ttc') %}selected{% endif %}>{{ f | e }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="ant-col ant-col-24 ant-col-md-8">
+        <label class="mpt-label">位置</label>
+        <select id="mpt-subtitle-position" class="ant-input">
+          <option value="top">顶部</option>
+          <option value="center">居中</option>
+          <option value="bottom" selected>底部</option>
+          <option value="custom">自定义</option>
+        </select>
+      </div>
+    </div>
+    <div class="ant-row ant-form-item">
+      <div class="ant-col ant-col-24 ant-col-md-6" style="padding-right:12px;">
+        <label class="mpt-label">自定义位置（距顶部 %）</label>
+        <input id="mpt-custom-position" class="ant-input" type="number" step="0.1" value="{{ cfg_ui.get('custom_position', 70) }}"/>
+      </div>
+      <div class="ant-col ant-col-24 ant-col-md-6" style="padding-right:12px;">
+        <label class="mpt-label">字色</label>
+        <input id="mpt-text-fore-color" class="ant-input" type="text" value="{{ cfg_ui.get('text_fore_color', '#FFFFFF') }}"/>
+      </div>
+      <div class="ant-col ant-col-24 ant-col-md-6" style="padding-right:12px;">
+        <label class="mpt-label">字号</label>
+        <input id="mpt-font-size" class="ant-input" type="number" value="{{ cfg_ui.get('font_size', 60) }}"/>
+      </div>
+      <div class="ant-col ant-col-24 ant-col-md-6">
+        <label class="mpt-label">描边色 / 宽度</label>
+        <div style="display:flex;gap:8px;">
+          <input id="mpt-stroke-color" class="ant-input" type="text" value="#000000" style="flex:1"/>
+          <input id="mpt-stroke-width" class="ant-input" type="number" step="0.1" value="1.5" style="width:90px"/>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="ant-card ant-card-bordered" style="margin-bottom: 16px;">
+  <div class="ant-card-head"><div class="ant-card-head-title">高级</div></div>
+  <div class="ant-card-body">
+    <label class="mpt-label">线程数</label>
+    <select id="mpt-n-threads" class="ant-input" style="max-width:120px;">
+      {% for n in [1,2,3,4,6,8] %}
+      <option value="{{ n }}" {% if n==2 %}selected{% endif %}>{{ n }}</option>
+      {% endfor %}
+    </select>
+  </div>
+</div>
+
+<div class="mpt-btn-row" style="margin-bottom: 16px;">
+  <button type="button" id="mpt-btn-submit-video" class="ant-btn ant-btn-primary ant-btn-lg">创建视频任务</button>
+  <span id="mpt-job-status" class="mpt-muted" style="margin-left:16px;"></span>
+</div>
+
+<div id="mpt-video-logs" class="ant-card ant-card-bordered" style="display:none;margin-bottom:16px;">
+  <div class="ant-card-head"><div class="ant-card-head-title">生成日志</div></div>
+  <div class="ant-card-body">
+    <pre id="mpt-video-logs-body" style="margin:0;max-height:320px;overflow:auto;white-space:pre-wrap;word-break:break-word;font-size:13px;line-height:1.5;"></pre>
+  </div>
+</div>
+
+<div id="mpt-video-result" class="ant-card ant-card-bordered" style="display:none;">
+  <div class="ant-card-head"><div class="ant-card-head-title">生成结果</div></div>
+  <div class="ant-card-body" id="mpt-video-result-body"></div>
+</div>
+
+<script>
+(function(){
+  var src = document.getElementById('mpt-video-source');
+  var wrap = document.getElementById('mpt-local-wrap');
+  function sync(){ wrap.style.display = src.value === 'local' ? 'block' : 'none'; }
+  src.addEventListener('change', sync);
+  sync();
+})();
+</script>
+{% endblock %}

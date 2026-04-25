@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}视频列表{% endblock %}
+{% block breadcrumb %}
+{% endblock %}
+{% block content %}
+<div class="ant-card ant-card-bordered" style="margin-bottom:12px;">
+  <div class="ant-card-body">
+    <div class="mpt-filter-row">
+      <input id="mpt-videos-filter-subject" class="ant-input" type="text" placeholder="主题" />
+      <select id="mpt-videos-filter-state" class="ant-input">
+        <option value="">全部状态</option>
+        <option value="1">已完成</option>
+        <option value="-1">失败</option>
+        <option value="4">进行中</option>
+      </select>
+      <input id="mpt-videos-filter-created-from" class="ant-input" type="datetime-local" />
+      <input id="mpt-videos-filter-created-to" class="ant-input" type="datetime-local" />
+      <button type="button" id="mpt-videos-filter-apply" class="ant-btn ant-btn-primary">查询</button>
+      <button type="button" id="mpt-videos-filter-reset" class="ant-btn">重置</button>
+    </div>
+  </div>
+</div>
+
+<div id="mpt-videos-cards" class="mpt-videos-cards"></div>
+
+<div id="mpt-videos-empty" class="ant-card ant-card-bordered" style="display:none;">
+  <div class="ant-card-body mpt-muted">暂无视频数据</div>
+</div>
+
+<div class="mpt-btn-row mpt-toolbar-row">
+  <button type="button" id="mpt-videos-refresh" class="ant-btn ant-btn-primary">刷新</button>
+  <span class="mpt-muted mpt-toolbar-text" id="mpt-videos-meta"></span>
+  <button type="button" class="ant-btn" id="mpt-videos-prev">上一页</button>
+  <span id="mpt-videos-page" class="mpt-muted mpt-toolbar-text"></span>
+  <button type="button" class="ant-btn" id="mpt-videos-next">下一页</button>
+</div>
+{% endblock %}

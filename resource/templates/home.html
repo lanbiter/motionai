@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block breadcrumb %}
+{% endblock %}
+{% block content %}
+<div class="ant-row" style="margin-top: 24px;">
+  <div class="ant-col ant-col-xs-24 ant-col-md-8" style="padding: 8px;">
+    <div class="ant-card ant-card-bordered mpt-card-link">
+      <div class="ant-card-body">
+        <h3 class="mpt-card-title">视频生成</h3>
+        <p class="mpt-muted">配置文案、素材、语音与字幕后提交异步任务。</p>
+        <a class="ant-btn ant-btn-primary" href="/admin/video">进入</a>
+      </div>
+    </div>
+  </div>
+  <div class="ant-col ant-col-xs-24 ant-col-md-8" style="padding: 8px;">
+    <div class="ant-card ant-card-bordered mpt-card-link">
+      <div class="ant-card-body">
+        <h3 class="mpt-card-title">任务列表</h3>
+        <p class="mpt-muted">分页查看内存/Redis 中的任务状态与临时链接。</p>
+        <a class="ant-btn" href="/admin/tasks">进入</a>
+      </div>
+    </div>
+  </div>
+  <div class="ant-col ant-col-xs-24 ant-col-md-8" style="padding: 8px;">
+    <div class="ant-card ant-card-bordered mpt-card-link">
+      <div class="ant-card-body">
+        <h3 class="mpt-card-title">视频列表</h3>
+        <p class="mpt-muted">查看已持久化的成片，支持预览与打开链接。</p>
+        <a class="ant-btn" href="/admin/videos">进入</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
