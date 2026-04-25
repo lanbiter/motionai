@@ -12,29 +12,31 @@
 
 启动服务后，在浏览器访问 **`http://<listen_host>:<listen_port>/admin`** 进入管理后台（侧边栏：工作台、视频生成、任务列表、视频列表）。
 
+以下预览图使用 **`raw.githubusercontent.com`** 地址，便于在 GitHub 网页上直接渲染（相对路径在部分场景下可能不显示）。若你使用 **fork** 仓库，请把链接里的 `lanbiter/motionai` 换成自己的 `用户名/仓库名`，默认分支若不是 `main` 也请一并替换。
+
 **截图文件引用：**
 
-- 工作台：[docs/web-workbench.png](./docs/web-workbench.png)
-- 任务列表：[docs/web-tasks.png](./docs/web-tasks.png)
-- 视频列表：[docs/web-videos.png](./docs/web-videos.png)
+- 工作台：[在仓库中查看](https://github.com/lanbiter/motionai/blob/main/docs/web-workbench.png) · [直链（嵌入用）](https://raw.githubusercontent.com/lanbiter/motionai/main/docs/web-workbench.png)
+- 任务列表：[在仓库中查看](https://github.com/lanbiter/motionai/blob/main/docs/web-tasks.png) · [直链（嵌入用）](https://raw.githubusercontent.com/lanbiter/motionai/main/docs/web-tasks.png)
+- 视频列表：[在仓库中查看](https://github.com/lanbiter/motionai/blob/main/docs/web-videos.png) · [直链（嵌入用）](https://raw.githubusercontent.com/lanbiter/motionai/main/docs/web-videos.png)
 
 ### 工作台
 
 入口总览：视频生成、任务列表、视频列表的快速说明与进入按钮。
 
-![工作台](./docs/web-workbench.png)
+![工作台](https://raw.githubusercontent.com/lanbiter/motionai/main/docs/web-workbench.png)
 
 ### 任务列表
 
 分页查看任务状态、进度、成片链接与生成日志；支持筛选、刷新、重试与删除。
 
-![任务列表](./docs/web-tasks.png)
+![任务列表](https://raw.githubusercontent.com/lanbiter/motionai/main/docs/web-tasks.png)
 
 ### 视频列表
 
 查看已持久化的成片卡片：支持内嵌预览、打开成片链接，并可按主题、状态与时间筛选。
 
-![视频列表](./docs/web-videos.png)
+![视频列表](https://raw.githubusercontent.com/lanbiter/motionai/main/docs/web-videos.png)
 
 ## 环境要求
 
