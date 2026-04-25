@@ -5,7 +5,7 @@ import pathlib
 import shutil
 from typing import Union
 
-from fastapi import BackgroundTasks, Depends, Path, Request, UploadFile
+from fastapi import BackgroundTasks, Depends, Path, Query, Request, UploadFile
 from fastapi.params import File
 from fastapi.responses import FileResponse, StreamingResponse
 from loguru import logger
@@ -101,13 +101,39 @@ def _resolve_path_within_directory(base_dir: str, unsafe_path: str, request_id: 
     return resolved_path
 
 
+_MEDIA_EXTS = frozenset({".mp4", ".mov", ".webm", ".mkv", ".m4v"})
+
+
+def _resolved_task_media_path(task_id: str, raw: str | None) -> str | None:
+    """校验任务成片路径：须为真实文件、扩展名在白名单，且路径中须包含该 task_id。"""
+    if not raw or not isinstance(raw, str):
+        return None
+    s = raw.strip()
+    if not s or not task_id or ".." in s.replace("\\", "/").split("/"):
+        return None
+    try:
+        rp = os.path.realpath(s)
+    except OSError:
+        return None
+    if not os.path.isfile(rp):
+        return None
+    ext = os.path.splitext(rp)[1].lower()
+    if ext not in _MEDIA_EXTS:
+        return None
+    if task_id not in rp.replace("\\", "/").split("/"):
+        return None
+    return rp
+
+
 def _public_task_snapshot(request: Request, task: dict) -> dict:
     """将任务里的视频路径转为浏览器可打开的 URL；返回副本，不修改 state 中的原始 dict。"""
     endpoint = config.app.get("endpoint", "") or str(request.base_url)
     endpoint = str(endpoint).rstrip("/")
     task_dir = utils.task_dir()
+    tid = (task.get("task_id") or "").strip()
 
     def file_to_uri(file: str) -> str:
+        """无 task_id 等场景下仍尝试映射到静态 /tasks/…"""
         if not file or not isinstance(file, str):
             return file
         s = file.strip()
@@ -117,9 +143,6 @@ def _public_task_snapshot(request: Request, task: dict) -> dict:
             return s
         if s.startswith(endpoint):
             return s
-        # 静态挂载：/tasks -> storage/tasks；相对 URL 为 /tasks/<task_id>/...
-        # 历史数据可能来自其它目录（如旧仓库 MoneyPrinterTurbo），简单 replace(task_dir, "tasks")
-        # 会失败，进而拼出 http://host//Users/... 这类无效地址。
         try:
             abs_file = os.path.realpath(s)
             abs_root = os.path.realpath(task_dir)
@@ -145,11 +168,37 @@ def _public_task_snapshot(request: Request, task: dict) -> dict:
         )
         return s
 
+    def path_list_to_api_urls(field_key: str, val: object) -> object:
+        if not isinstance(val, list):
+            return val
+        out: list[str | object] = []
+        for i, p in enumerate(val):
+            if not isinstance(p, str):
+                out.append(p)
+                continue
+            s = p.strip()
+            if not s:
+                out.append(p)
+                continue
+            if s.startswith("http://") or s.startswith("https://"):
+                out.append(s)
+                continue
+            if s.startswith(endpoint):
+                out.append(s)
+                continue
+            if tid:
+                out.append(
+                    f"{endpoint}/api/v1/tasks/{tid}/file?field={field_key}&index={i}"
+                )
+            else:
+                out.append(file_to_uri(s))
+        return out
+
     snap = dict(task)
-    for key in ("videos", "combined_videos"):
-        val = snap.get(key)
-        if isinstance(val, list):
-            snap[key] = [file_to_uri(v) for v in val]
+    snap["videos"] = path_list_to_api_urls("videos", snap.get("videos"))
+    snap["combined_videos"] = path_list_to_api_urls(
+        "combined_videos", snap.get("combined_videos")
+    )
     return snap
 
 
@@ -206,8 +255,6 @@ def create_task(
         raise HttpException(
             task_id=task_id, status_code=400, message=f"{request_id}: {str(e)}"
         )
-
-from fastapi import Query
 
 @router.get("/tasks", response_model=TaskQueryResponse, summary="Get all tasks")
 def get_all_tasks(
@@ -288,6 +335,46 @@ def get_task(
 
     raise HttpException(
         task_id=task_id, status_code=404, message=f"{request_id}: task not found"
+    )
+
+
+@router.get(
+    "/tasks/{task_id}/file",
+    summary="按任务与索引读取成片文件（支持数据库中记录的任意磁盘绝对路径）",
+)
+def stream_task_media_file(
+    request: Request,
+    task_id: str = Path(..., description="Task ID"),
+    field: str = Query(
+        "videos",
+        description="videos 或 combined_videos",
+        pattern="^(videos|combined_videos)$",
+    ),
+    index: int = Query(0, ge=0, le=64),
+):
+    """列表页 / 视频卡片使用；不依赖静态 /tasks 挂载目录与数据库路径是否在同一项目根下。"""
+    request_id = base.get_task_id(request)
+    task = video_archive_db.get_task(task_id) or sm.state.get_task(task_id)
+    if not task:
+        raise HttpException(
+            task_id=task_id, status_code=404, message=f"{request_id}: task not found"
+        )
+    paths = task.get(field)
+    if not isinstance(paths, list) or index >= len(paths):
+        raise HttpException(
+            task_id=task_id, status_code=404, message=f"{request_id}: file not found"
+        )
+    raw = paths[index]
+    rp = _resolved_task_media_path(task_id, raw if isinstance(raw, str) else None)
+    if not rp:
+        raise HttpException(
+            task_id=task_id, status_code=404, message=f"{request_id}: file not found on disk"
+        )
+    ext = os.path.splitext(rp)[1].lower().lstrip(".") or "mp4"
+    return FileResponse(
+        path=rp,
+        media_type=f"video/{ext}" if ext else "video/mp4",
+        filename=os.path.basename(rp),
     )
 
 
